@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import databaseConfig from './config/database.config';
+import databaseConfig, { enumConfigDatabase } from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { enumConfigDatabase } from './constants/database.const';
 import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
+import { MailerModule } from '@nestjs-modules/mailer';
+import mailerConfig, { enumConfigMailer } from './config/mailer.config';
 
 const APP_CONFIG = 'APP_CONFIG';
 type TAppConfig = {
@@ -14,14 +17,14 @@ type TAppConfig = {
   //   host: string,
   //   port: number,
   // },
-  // mailer: {
-  //   host: string,
-  //   port: number,
-  //   user: string,
-  //   pass: string,
-  //   from: string,
-  //   secure: boolean,
-  // }
+  mailer: {
+    host: string,
+    port: number,
+    user: string,
+    pass: string,
+    from: string,
+    secure: boolean,
+  }
 }
 
 @Module({
@@ -29,7 +32,7 @@ type TAppConfig = {
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env'],
-      load: [databaseConfig,],
+      load: [databaseConfig,mailerConfig],
       // validate: validateEnvConfig,
       expandVariables: true,
     }),
@@ -40,7 +43,31 @@ type TAppConfig = {
         useFactory: (appConfig: TAppConfig) => appConfig.database, // Lấy cấu hình từ APP_CONFIG
       }
     ),
+    MailerModule.forRootAsync({
+      imports: [AppModule],
+      inject: [APP_CONFIG],
+      useFactory: ({ mailer }: TAppConfig) => {
+        console.log("🚀 ~ mailer:", mailer)
+        const transportMailer = `${mailer.secure ? 'smtps' : 'smtp'}://${mailer.user}:${mailer.pass}@${mailer.host}`;
+        return ({
+          transport: transportMailer,
+          defaults: {
+            from: '"TBQuangAnh NestJS" <tbquanganh@gmail.com>'
+          },
+          template: {
+            dir: __dirname + '/common/mail/templates',
+            adapter: new EjsAdapter({
+              inlineCssEnabled: true,
+            }),
+            options: {
+              strict: true,
+            },
+          },
+        })
+      }
+    }),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -55,14 +82,14 @@ type TAppConfig = {
           //   host: configService.get(enumConfigRedis.host),
           //   port: configService.get(enumConfigRedis.port),
           // },
-          // mailer: {
-          //   host: configService.get(enumConfigMailer.host),
-          //   port: configService.get(enumConfigMailer.port),
-          //   user: configService.get(enumConfigMailer.user),
-          //   pass: configService.get(enumConfigMailer.pass),
-          //   from: configService.get(enumConfigMailer.from),
-          //   secure: configService.get(enumConfigMailer.secure),
-          // }
+          mailer: {
+            host: configService.get(enumConfigMailer.host)!,
+            port: configService.get(enumConfigMailer.port)!,
+            user: configService.get(enumConfigMailer.user)!,
+            pass: configService.get(enumConfigMailer.pass)!,
+            from: configService.get(enumConfigMailer.from)!,
+            secure: configService.get(enumConfigMailer.secure)!,
+          }
         })
       },
     },
