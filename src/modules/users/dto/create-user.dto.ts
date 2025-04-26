@@ -1,12 +1,4 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsIn,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsOptional, Length } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -24,10 +16,11 @@ export class CreateUserDto {
   })
   password: string;
 
+  @IsOptional()
   @IsIn(['active', 'inactive'], {
     message: 'Trạng thái phải là active hoặc inactive',
   })
-  status: string;
+  status?: string;
 
   @IsOptional()
   @IsIn(['admin', 'user'], {

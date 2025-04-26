@@ -53,9 +53,6 @@ export class Customer extends BaseEntity {
   })
   avatar: string;
 
-  @Column()
-  city: string;
-
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',

@@ -9,50 +9,48 @@ import { AuthModule } from './modules/auth/auth.module';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { MailerModule } from '@nestjs-modules/mailer';
 import mailerConfig, { enumConfigMailer } from './config/mailer.config';
+import { CustomersModule } from './modules/customers/customers.module';
 
 const APP_CONFIG = 'APP_CONFIG';
 type TAppConfig = {
-  database: any,
+  database: any;
   // redis: {
   //   host: string,
   //   port: number,
   // },
   mailer: {
-    host: string,
-    port: number,
-    user: string,
-    pass: string,
-    from: string,
-    secure: boolean,
-  }
-}
+    host: string;
+    port: number;
+    user: string;
+    pass: string;
+    from: string;
+    secure: boolean;
+  };
+};
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env'],
-      load: [databaseConfig,mailerConfig],
+      load: [databaseConfig, mailerConfig],
       // validate: validateEnvConfig,
       expandVariables: true,
     }),
-    TypeOrmModule.forRootAsync(
-      {
-        imports: [AppModule],
-        inject: [APP_CONFIG], // Thay vì inject ConfigService
-        useFactory: (appConfig: TAppConfig) => appConfig.database, // Lấy cấu hình từ APP_CONFIG
-      }
-    ),
+    TypeOrmModule.forRootAsync({
+      imports: [AppModule],
+      inject: [APP_CONFIG], // Thay vì inject ConfigService
+      useFactory: (appConfig: TAppConfig) => appConfig.database, // Lấy cấu hình từ APP_CONFIG
+    }),
     MailerModule.forRootAsync({
       imports: [AppModule],
       inject: [APP_CONFIG],
       useFactory: ({ mailer }: TAppConfig) => {
-        console.log("🚀 ~ mailer:", mailer)
         const transportMailer = `${mailer.secure ? 'smtps' : 'smtp'}://${mailer.user}:${mailer.pass}@${mailer.host}`;
-        return ({
+        return {
           transport: transportMailer,
           defaults: {
-            from: '"TBQuangAnh NestJS" <tbquanganh@gmail.com>'
+            from: '"TBQuangAnh NestJS" <tbquanganh@gmail.com>',
           },
           template: {
             dir: __dirname + '/common/mail/templates',
@@ -63,11 +61,12 @@ type TAppConfig = {
               strict: true,
             },
           },
-        })
-      }
+        };
+      },
     }),
     UsersModule,
     AuthModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [
@@ -76,7 +75,7 @@ type TAppConfig = {
       inject: [ConfigService],
       provide: APP_CONFIG, // Provider tập trung cho tất cả cấu hình
       useFactory: (configService: ConfigService): TAppConfig => {
-        return ({
+        return {
           database: configService.get(enumConfigDatabase.db),
           // redis: {
           //   host: configService.get(enumConfigRedis.host),
@@ -89,8 +88,8 @@ type TAppConfig = {
             pass: configService.get(enumConfigMailer.pass)!,
             from: configService.get(enumConfigMailer.from)!,
             secure: configService.get(enumConfigMailer.secure)!,
-          }
-        })
+          },
+        };
       },
     },
   ],

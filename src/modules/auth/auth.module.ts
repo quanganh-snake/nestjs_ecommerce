@@ -7,17 +7,19 @@ import { PasswordTokenService } from './password-token.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PasswordToken } from 'src/entities/password_token.entity';
 import ForgotPasswordNotification from 'src/common/notifications/forgot-password.notification';
+import { CustomersModule } from '../customers/customers.module';
 
 @Module({
   imports: [
     UsersModule,
+    CustomersModule,
     TypeOrmModule.forFeature([PasswordToken]),
     JwtModule.register({
-    global: true,
-    secret: process.env.JWT_SECRET,
-    signOptions: { expiresIn: process.env.JWT_ACT_EXPIRES_IN },
-  })
-],
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_ACT_EXPIRES_IN },
+    }),
+  ],
   controllers: [AuthController],
   providers: [AuthService, PasswordTokenService, ForgotPasswordNotification],
 })

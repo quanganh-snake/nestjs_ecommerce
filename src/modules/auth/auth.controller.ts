@@ -10,6 +10,7 @@ import {
   GoneException,
   Patch,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -22,6 +23,7 @@ import { PasswordTokenService } from './password-token.service';
 import { API_VERSION } from 'src/constants/apiVersion';
 import ResetPasswordDto from './dto/reset-password.dto';
 import ForgotPasswordNotification from 'src/common/notifications/forgot-password.notification';
+import RegisterDto from './dto/register.dto';
 @Controller({
   path: 'auth',
   version: API_VERSION.V1,
@@ -115,5 +117,14 @@ export class AuthController {
     this.resetPasswordNotification.send(data);
 
     return successResponse({}, 'Reset password successfully!');
+  }
+
+  @Post('register')
+  async register(@Body() body: RegisterDto) {
+    const result = await this.authService.register(body);
+    if ('error' in result && result.error === 'user-exist') {
+      throw new ConflictException('Email đã tồn tại');
+    }
+    return successResponse(result, 'Register successfully');
   }
 }

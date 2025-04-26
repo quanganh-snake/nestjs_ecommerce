@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import Hashing from 'src/utils/hashing';
 import { CreateUserDto } from './dto/create-user.dto';
 import UpdateUserDto from './dto/update-user.dto';
+import { TUserType } from 'src/types/User';
 @Injectable()
 export class UsersService {
   constructor(
@@ -88,7 +89,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { [field]: value } });
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(
+    createUserDto: CreateUserDto,
+    userType: TUserType = 'admin',
+  ): Promise<User> {
     const hashedPassword = await Hashing.hashPassword(createUserDto.password);
     // createUserDto.user_type = 'admin';
     if (createUserDto.status === 'active') {
@@ -96,6 +100,7 @@ export class UsersService {
     }
     const user = this.userRepository.create({
       ...createUserDto,
+      user_type: userType,
       password: hashedPassword,
     });
     return this.userRepository.save(user);
