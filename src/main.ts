@@ -8,6 +8,7 @@ import {
 import { AllExceptionsFilter } from './common/exceptions/http-exception';
 import { ValidationPipe } from '@nestjs/common';
 import { errorResponse } from './utils/response';
+import { useContainer } from 'class-validator';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -39,6 +40,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

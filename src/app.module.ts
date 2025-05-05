@@ -10,6 +10,10 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { MailerModule } from '@nestjs-modules/mailer';
 import mailerConfig, { enumConfigMailer } from './config/mailer.config';
 import { CustomersModule } from './modules/customers/customers.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { IsUniqueConstraint } from './common/validation/UniqueConstraint';
+import { EntityManager } from 'typeorm';
+import { BrandsModule } from './modules/brands/brands.module';
 
 const APP_CONFIG = 'APP_CONFIG';
 type TAppConfig = {
@@ -67,10 +71,18 @@ type TAppConfig = {
     UsersModule,
     AuthModule,
     CustomersModule,
+    CategoriesModule,
+    BrandsModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: IsUniqueConstraint,
+      useFactory: (entityManager: EntityManager) =>
+        new IsUniqueConstraint(entityManager),
+      inject: [EntityManager],
+    },
     {
       inject: [ConfigService],
       provide: APP_CONFIG, // Provider tập trung cho tất cả cấu hình

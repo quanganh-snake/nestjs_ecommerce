@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
@@ -11,7 +11,7 @@ import { CustomersModule } from '../customers/customers.module';
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     CustomersModule,
     TypeOrmModule.forFeature([PasswordToken]),
     JwtModule.register({
@@ -22,5 +22,6 @@ import { CustomersModule } from '../customers/customers.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, PasswordTokenService, ForgotPasswordNotification],
+  exports: [AuthService],
 })
 export class AuthModule {}
