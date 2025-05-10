@@ -14,6 +14,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { IsUniqueConstraint } from './common/validation/UniqueConstraint';
 import { EntityManager } from 'typeorm';
 import { BrandsModule } from './modules/brands/brands.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 const APP_CONFIG = 'APP_CONFIG';
 type TAppConfig = {
@@ -45,6 +47,9 @@ type TAppConfig = {
       imports: [AppModule],
       inject: [APP_CONFIG], // Thay vì inject ConfigService
       useFactory: (appConfig: TAppConfig) => appConfig.database, // Lấy cấu hình từ APP_CONFIG
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
     }),
     MailerModule.forRootAsync({
       imports: [AppModule],
