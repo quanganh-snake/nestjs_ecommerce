@@ -16,6 +16,10 @@ import { EntityManager } from 'typeorm';
 import { BrandsModule } from './modules/brands/brands.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { WinstonModule } from 'nest-winston';
+import { ProductsModule } from './modules/products/products.module';
+import * as winston from 'winston';
+import * as moment from 'moment';
 
 const APP_CONFIG = 'APP_CONFIG';
 type TAppConfig = {
@@ -48,8 +52,41 @@ type TAppConfig = {
       inject: [APP_CONFIG], // Thay vì inject ConfigService
       useFactory: (appConfig: TAppConfig) => appConfig.database, // Lấy cấu hình từ APP_CONFIG
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(__dirname, '..', 'logs'),
+        serveRoot: '/logs',
+        serveStaticOptions: {
+          dotfiles: 'allow',
+          index: false,
+          setHeaders: (res, path) => {
+            res.setHeader('Content-Type', 'application/json');
+          },
+        },
+      },
+      {
+        rootPath: join(__dirname, '..', 'public'),
+      },
+    ),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.File({
+          filename: `logs/info/winston_log_${moment(new Date()).format('DD-MM-YYYY')}.json`,
+          level: 'info',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: `logs/error/winston_log_${moment(new Date()).format('DD-MM-YYYY')}.json`,
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
+      ],
     }),
     MailerModule.forRootAsync({
       imports: [AppModule],
@@ -78,6 +115,7 @@ type TAppConfig = {
     CustomersModule,
     CategoriesModule,
     BrandsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [

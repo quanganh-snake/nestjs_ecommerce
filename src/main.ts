@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import {
-  BadRequestException,
   ValidationError,
   VersioningType,
 } from '@nestjs/common';
@@ -9,14 +8,30 @@ import { AllExceptionsFilter } from './common/exceptions/http-exception';
 import { ValidationPipe } from '@nestjs/common';
 import { errorResponse } from './utils/response';
 import { useContainer } from 'class-validator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import * as fs from 'fs';
+import * as path from 'path';
+
+
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  const logDirs = ['logs/info', 'logs/error'];
+  logDirs.forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
 
   app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI,
   });
-  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // App use package
+  app.useGlobalFilters(new AllExceptionsFilter(logger));
+  app.useLogger(logger);
   // Áp dụng validation-pipe cho toàn bộ ứng dụng
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,6 +57,7 @@ async function bootstrap() {
   );
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

@@ -6,7 +6,9 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity('categories')
 export class Category extends BaseEntity {
@@ -20,6 +22,10 @@ export class Category extends BaseEntity {
   @OneToMany(() => Category, (category) => category.parent)
   @JoinColumn({ name: 'parent_id' })
   children: Category[];
+
+  @ManyToMany(() => Category, (category) => category.products)
+  @JoinColumn()
+  products: Product[];
 
   @Column()
   parent_id: number;

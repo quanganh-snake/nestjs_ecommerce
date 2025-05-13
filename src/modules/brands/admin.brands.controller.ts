@@ -122,6 +122,7 @@ export class AdminBrandsController {
     image.originalname = Buffer.from(image.originalname, 'latin1').toString(
       'utf8',
     );
+    image.path = image.path.replace(/\\/g, '/');
     return successResponse(image, 'Upload file successfully');
   }
 }

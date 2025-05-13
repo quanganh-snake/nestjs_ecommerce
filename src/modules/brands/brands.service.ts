@@ -53,13 +53,25 @@ export class BrandsService {
     const dataCategories = await queryBuilder.getMany();
     const totalItems = await queryBuilder.getCount();
 
-    return [dataCategories, totalItems];
+    return [
+      dataCategories.map((category) => {
+        if (category.image) {
+          category.image = `${process.env.APP_URL}/${category.image}`;
+        }
+        return category;
+      }),
+      totalItems,
+    ];
   }
 
   async find(id: number): Promise<Brand | null> {
-    return this.brandRepository.findOne({
+    const category = await this.brandRepository.findOne({
       where: { id },
     });
+    if (category?.image) {
+      category.image = `${process.env.APP_URL}/${category.image}`;
+    }
+    return category;
   }
 
   // 3. Create
@@ -80,6 +92,11 @@ export class BrandsService {
     }
 
     const brand = this.brandRepository.create(databrandParent);
+
+    if (brand.image) {
+      brand.image = `${process.env.APP_URL}/${brand.image}`;
+    }
+
     return this.brandRepository.save(brand);
   }
 

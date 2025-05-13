@@ -7,11 +7,16 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
+import { Product } from './product.entity';
 
 @Entity('brands')
 export class Brand extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @OneToMany(() => Product, (product) => product.brand)
+  @JoinColumn()
+  products: Product[];
 
   @Column()
   name: string;

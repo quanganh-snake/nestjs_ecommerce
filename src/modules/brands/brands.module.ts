@@ -14,9 +14,9 @@ import { v4 as uuidV4 } from 'uuid';
     TypeOrmModule.forFeature([Brand]),
     AuthModule,
     MulterModule.register({
-      dest: './storage',
+      dest: './public/storage',
       storage: diskStorage({
-        destination: './storage/brands',
+        destination: './public/storage/brands',
         filename: (req, file, cb) => {
           const extFile = file.originalname?.split('.').pop();
           const fileName = `${uuidV4().toString()}.${extFile}`;
@@ -27,5 +27,6 @@ import { v4 as uuidV4 } from 'uuid';
   ],
   controllers: [BrandsController, AdminBrandsController],
   providers: [BrandsService],
+  exports: [BrandsService],
 })
 export class BrandsModule {}
