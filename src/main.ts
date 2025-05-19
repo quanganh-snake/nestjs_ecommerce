@@ -1,9 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  ValidationError,
-  VersioningType,
-} from '@nestjs/common';
+import { ValidationError, VersioningType } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/exceptions/http-exception';
 import { ValidationPipe } from '@nestjs/common';
 import { errorResponse } from './utils/response';
@@ -12,10 +9,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as fs from 'fs';
 import * as path from 'path';
 
-
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   const logDirs = ['logs/info', 'logs/error'];
   logDirs.forEach((dir) => {
